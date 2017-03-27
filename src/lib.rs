@@ -37,7 +37,7 @@ impl SetOperations for PcSet {
         (0..12).filter(|x| !self.contains(x)).collect()
     }
     fn reverse(&self) -> PcSet {
-        self.iter().fold(vec![] as PcSet, |acc, &x| [vec![x], acc].concat())
+        self.iter().fold(vec![], |acc, &x| [vec![x], acc].concat())
     }
     fn sort(&self) -> PcSet {
         let mut clone = self.clone();
@@ -54,13 +54,7 @@ impl SetOperations for PcSet {
         clone
     }
     fn shift(&self, n: usize) -> PcSet {
-        let len = self.len();
-        self.iter()
-            .cycle()
-            .skip(n + 1)
-            .take(len)
-            .cloned()
-            .collect()
+        self.iter().cycle().skip(n + 1).take(self.len()).cloned().collect()
     }
     fn zero(&self) -> PcSet {
         match self.iter().min() {
@@ -69,16 +63,40 @@ impl SetOperations for PcSet {
         }
     }
     fn normal(&self) -> PcSet {
+        use std::cmp::Ordering;
+
+        fn binaryvalue(pcset: &PcSet) -> i64 {
+            match pcset.first() {
+                None => 0,
+                Some(head) =>
+                    pcset
+                        .iter()
+                        .skip(1)
+                        .map(|&x| match (x - head) % 12 {
+                            r if r >= 0 => r,
+                            r => r + 12,
+                        })
+                        .enumerate()
+                        .fold(0, |acc, (i, e)| acc + e as i64 * 10i64.pow(i as u32))
+            }
+        }
+
         let sorted = self.sort();
         let len = self.len();
         (0..len)
             .map(|x| sorted.shift(x))
-            .fold(None, |acc, x| {
-                match acc {
-                    None => Some(x),
-                    Some(acc) => {
-                        if x[len - 1] - x[0] < acc[len - 1] - acc[0] { Some(x) }
-                        else { Some(acc) }
+            .fold(None, |x, y| {
+                match x {
+                    None => Some(y),
+                    Some(x) => {
+                        match binaryvalue(&x).cmp(&binaryvalue(&y)) {
+                            Ordering::Less => Some(x),
+                            Ordering::Greater => Some(y),
+                            Ordering::Equal => match x.first().cmp(&y.first()) {
+                                Ordering::Less => Some(x),
+                                _ => Some(y),
+                            }
+                        }
                     },
                 }
             })
@@ -137,7 +155,11 @@ mod tests {
 
     #[test]
     fn normal() {
-        let x: PcSet = vec![1, 2, 3];
-        assert_eq!(x.normal(), vec![0, 1, 2]);
+        let x: PcSet = vec![8, 0, 4, 6];
+        assert_eq!(x.normal(), vec![4, 6, 8, 0]);
+        let y: PcSet = vec![2, 1, 3, 7, 6];
+        assert_eq!(y.normal(), vec![1, 2, 3, 6, 7]);
+        let z: PcSet = vec![2, 1, 3, 7, 6, 0, 5, 9, 8, 10, 11];
+        assert_eq!(z.normal(), vec![1, 2, 3, 6, 7]);
     }
 }
