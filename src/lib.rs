@@ -1,3 +1,20 @@
+// TODO make less ugly or maybe throw an error on None
+fn binaryvalue(pcset: &PcSet) -> i64 {
+    match pcset.first() {
+        None => 0,
+        Some(head) =>
+            pcset
+                .iter()
+                .skip(1)
+                .map(|&x| match (x - head) % 12 {
+                    r if r >= 0 => r,
+                    r => r + 12,
+                })
+                .enumerate()
+                .fold(0, |acc, (i, e)| acc + e as i64 * 10i64.pow(i as u32))
+    }
+}
+
 type PcSet = Vec<i8>;
 
 trait Fundamentals {
@@ -28,7 +45,7 @@ trait SetOperations {
     fn shift(&self, usize) -> Self;
     fn zero(&self) -> Self;
     fn normal(&self) -> Self;
-    // fn reduced(&self) -> Self;
+    fn reduced(&self) -> Self;
     // fn prime(&self) -> Self;
 }
 
@@ -51,7 +68,7 @@ impl SetOperations for PcSet {
             }
             clone[j] = temp;
         }
-        clone
+        return clone;
     }
     fn shift(&self, n: usize) -> PcSet {
         self.iter().cycle().skip(n + 1).take(self.len()).cloned().collect()
@@ -64,25 +81,6 @@ impl SetOperations for PcSet {
     }
     fn normal(&self) -> PcSet {
         use std::cmp::Ordering;
-
-        // TODO make less ugly or maybe throw an error on None
-        fn binaryvalue(pcset: &PcSet) -> i64 {
-            match pcset.first() {
-                None => 0,
-                Some(head) =>
-                    pcset
-                        .iter()
-                        .skip(1)
-                        .map(|&x| match (x - head) % 12 {
-                            r if r >= 0 => r,
-                            r => r + 12,
-                        })
-                        .enumerate()
-                        .fold(0, |acc, (i, e)| {
-                            acc + e as i64 * 10i64.pow(i as u32)
-                        })
-            }
-        }
 
         let sorted = self.sort();
         let normal = (0..self.len())
@@ -107,6 +105,9 @@ impl SetOperations for PcSet {
             None => self.clone(),
             Some(x) => x,
         }
+    }
+    fn reduced(&self) -> PcSet {
+        self.normal().zero()
     }
 }
 
@@ -165,5 +166,11 @@ mod tests {
         assert_eq!(x.normal(), vec![4, 6, 8, 0]);
         let y: PcSet = vec![2, 1, 3, 7, 6];
         assert_eq!(y.normal(), vec![1, 2, 3, 6, 7]);
+    }
+
+    #[test]
+    fn reduced() {
+        let x: PcSet = vec![2, 1, 3, 7, 6];
+        assert_eq!(x.reduced(), vec![0, 1, 2, 5, 6]);
     }
 }
