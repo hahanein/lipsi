@@ -1,0 +1,6 @@
+[package]
+name = "lipsi"
+version = "0.1.0"
+authors = ["hahanein <binjamin@riseup.net>"]
+
+[dependencies]
