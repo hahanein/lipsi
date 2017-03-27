@@ -24,9 +24,9 @@ impl Fundamentals for PcSet {
 trait SetOperations {
     fn complement(&self) -> Self;
     fn reverse(&self) -> Self;
-    // fn sort(&self) -> Self;
+    fn sort(&self) -> Self;
     // fn shift(&self, i8) -> Self;
-    // fn zero(&self) -> Self;
+    fn zero(&self) -> Self;
     // fn normal(&self) -> Self;
     // fn reduced(&self) -> Self;
     // fn prime(&self) -> Self;
@@ -39,14 +39,26 @@ impl SetOperations for PcSet {
     fn reverse(&self) -> PcSet {
         self.iter().fold(vec![] as PcSet, |acc, &x| [vec![x], acc].concat())
     }
-    // fn sort(&self) -> PcSet {
-    //     for i in 0..self.len() {
-    //         let mut tmp = self[i];
-    //         for j in self {
-    //             
-    //         }
-    //     }
-    // }
+    fn sort(&self) -> PcSet {
+        let mut clone = self.clone();
+        let mut temp: i8;
+        for i in 0..clone.len() {
+            temp = clone[i];
+            let mut j = i;
+            while j > 0 && clone[j - 1] > temp {
+                clone[j] = clone[j - 1];
+                j = j - 1;
+            }
+            clone[j] = temp;
+        }
+        clone
+    }
+    fn zero(&self) -> PcSet {
+        match self.iter().min() {
+            Some(min) => self.iter().map(|x| x - min).collect(),
+            None => self.clone(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -77,5 +89,17 @@ mod tests {
     fn reverse() {
         let x: PcSet = vec![0, 1, 2];
         assert_eq!(x.reverse(), vec![2, 1, 0]);
+    }
+
+    #[test]
+    fn sort() {
+        let x: PcSet = vec![3, 1, 2];
+        assert_eq!(x.sort(), vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn zero() {
+        let x: PcSet = vec![1, 2, 3];
+        assert_eq!(x.zero(), vec![0, 1, 2]);
     }
 }
