@@ -65,6 +65,7 @@ impl SetOperations for PcSet {
     fn normal(&self) -> PcSet {
         use std::cmp::Ordering;
 
+        // TODO make less ugly or maybe throw an error on None
         fn binaryvalue(pcset: &PcSet) -> i64 {
             match pcset.first() {
                 None => 0,
@@ -77,13 +78,14 @@ impl SetOperations for PcSet {
                             r => r + 12,
                         })
                         .enumerate()
-                        .fold(0, |acc, (i, e)| acc + e as i64 * 10i64.pow(i as u32))
+                        .fold(0, |acc, (i, e)| {
+                            acc + e as i64 * 10i64.pow(i as u32)
+                        })
             }
         }
 
         let sorted = self.sort();
-        let len = self.len();
-        (0..len)
+        let normal = (0..self.len())
             .map(|x| sorted.shift(x))
             .fold(None, |x, y| {
                 match x {
@@ -99,8 +101,12 @@ impl SetOperations for PcSet {
                         }
                     },
                 }
-            })
-            .unwrap()
+            });
+
+        match normal {
+            None => self.clone(),
+            Some(x) => x,
+        }
     }
 }
 
@@ -159,7 +165,5 @@ mod tests {
         assert_eq!(x.normal(), vec![4, 6, 8, 0]);
         let y: PcSet = vec![2, 1, 3, 7, 6];
         assert_eq!(y.normal(), vec![1, 2, 3, 6, 7]);
-        let z: PcSet = vec![2, 1, 3, 7, 6, 0, 5, 9, 8, 10, 11];
-        assert_eq!(z.normal(), vec![1, 2, 3, 6, 7]);
     }
 }
