@@ -48,7 +48,7 @@ trait SetOperations {
     fn zero(&self) -> Self;
     fn normal(&self) -> Self;
     fn reduced(&self) -> Self;
-    // fn prime(&self) -> Self;
+    fn prime(&self) -> Self;
 }
 
 impl SetOperations for PcSet {
@@ -111,6 +111,12 @@ impl SetOperations for PcSet {
     }
     fn reduced(&self) -> PcSet {
         self.normal().zero()
+    }
+    fn prime(&self) -> PcSet {
+        let original = self.normal().zero();
+        let inverted = self.invert().normal().zero();
+        if decimalvalue(&original) < decimalvalue(&inverted) { original }
+        else { inverted }
     }
 }
 
@@ -175,5 +181,15 @@ mod tests {
     fn reduced() {
         let x: PcSet = vec![2, 1, 3, 7, 6];
         assert_eq!(x.reduced(), vec![0, 1, 2, 5, 6]);
+    }
+
+    #[test]
+    fn prime() {
+        // let x: PcSet = vec![8, 0, 4, 6];
+        // assert_eq!(x.prime(), vec![0, 2, 4, 8]);
+        let y: PcSet = vec![0, 8, 6, 8];
+        assert_eq!(y.prime(), vec![0, 2, 4, 8]);
+        // let z: PcSet = vec![2, 4, 8, 9];
+        // assert_eq!(z.prime(), vec![0, 1, 4, 8]);
     }
 }
