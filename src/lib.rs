@@ -1,5 +1,5 @@
 // TODO make less ugly or maybe throw an error on None
-fn binaryvalue(pcset: &PcSet) -> i64 {
+fn decimalvalue(pcset: &PcSet) -> i64 {
     match pcset.first() {
         None => 0,
         Some(head) =>
@@ -14,6 +14,8 @@ fn binaryvalue(pcset: &PcSet) -> i64 {
                 .fold(0, |acc, (i, e)| acc + e as i64 * 10i64.pow(i as u32))
     }
 }
+
+
 
 type PcSet = Vec<i8>;
 
@@ -80,7 +82,17 @@ impl SetOperations for PcSet {
         }
     }
     fn normal(&self) -> PcSet {
-        use std::cmp::Ordering;
+        fn packed(x: PcSet, y: PcSet) -> PcSet {
+            let dec_x = decimalvalue(&x);
+            let dec_y = decimalvalue(&y);
+
+            if dec_x < dec_y { x }
+            else if dec_x > dec_y { y }
+            else {
+                if x.first() < y.first() { x }
+                else { y }
+            }
+        }
 
         let sorted = self.sort();
         let normal = (0..self.len())
@@ -88,16 +100,7 @@ impl SetOperations for PcSet {
             .fold(None, |x, y| {
                 match x {
                     None => Some(y),
-                    Some(x) => {
-                        match binaryvalue(&x).cmp(&binaryvalue(&y)) {
-                            Ordering::Less => Some(x),
-                            Ordering::Greater => Some(y),
-                            Ordering::Equal => match x.first().cmp(&y.first()) {
-                                Ordering::Less => Some(x),
-                                _ => Some(y),
-                            }
-                        }
-                    },
+                    Some(x) => Some(packed(x, y)),
                 }
             });
 
