@@ -1,4 +1,3 @@
-// TODO make less ugly or maybe throw an error on None
 fn decimalvalue(pcset: &PcSet) -> Option<i64> {
     match pcset.first() {
         None => None,
@@ -14,7 +13,21 @@ fn decimalvalue(pcset: &PcSet) -> Option<i64> {
     }
 }
 
-
+fn packed(x: PcSet, y: PcSet) -> PcSet {
+    match (decimalvalue(&x), decimalvalue(&y)){
+        (None, None) => vec![],
+        (_, None) => x,
+        (None, _) => y,
+        (Some(a), Some(b)) => {
+            if a < b { x }
+            else if a > b { y }
+            else {
+                if x.first() < y.first() { x }
+                else { y }
+            }
+        },
+    }
+}
 
 type PcSet = Vec<i8>;
 
@@ -50,6 +63,8 @@ impl SetOperations for PcSet {
     fn reverse(&self) -> PcSet {
         self.iter().fold(vec![], |acc, &x| [vec![x], acc].concat())
     }
+    /// Implementation of the insertion sort algorithm for performant sorting of
+    /// (quite) small data sets
     fn sort(&self) -> PcSet {
         let mut clone = self.clone();
         let mut temp: i8;
@@ -74,29 +89,10 @@ impl SetOperations for PcSet {
         }
     }
     fn normal(&self) -> PcSet {
-        fn packed(x: PcSet, y: PcSet) -> PcSet {
-            match (decimalvalue(&x), decimalvalue(&y)){
-                (None, None) => vec![],
-                (_, None) => x,
-                (None, _) => y,
-                (Some(a), Some(b)) => {
-                    if a < b { x }
-                    else if a > b { y }
-                    else {
-                        if x.first() < y.first() { x }
-                        else { y }
-                    }
-                },
-            }
-        }
-
-        let sorted = self
-                        .sort()
-                        .iter()
-                        .fold(vec![], |acc, &x| {
-                            if acc.contains(&x) { acc }
-                            else { [acc, vec![x]].concat() }
-                        });
+        let sorted = self.sort().iter().fold(vec![], |acc, &x| {
+            if acc.contains(&x) { acc }
+            else { [acc, vec![x]].concat() }
+        });
 
         (0..self.len())
             .map(|x| sorted.shift(x))
@@ -108,7 +104,6 @@ impl SetOperations for PcSet {
     fn prime(&self) -> PcSet {
         let original = self.normal().zero();
         let inverted = self.invert().normal().zero();
-        println!("orig: {:?}, inve: {:?}", original, inverted);
         if decimalvalue(&original) < decimalvalue(&inverted) { original }
         else { inverted }
     }
@@ -131,38 +126,32 @@ mod tests {
         let z: PcSet = vec![8, 0, 4, 6];
         assert_eq!(z.invert(), vec![4, 0, 8, 6]);
     }
-
     #[test]
     fn transpose() {
         let x: PcSet = vec![1, 2, 3];
         assert_eq!(x.transpose(-14), vec![11, 0, 1]);
     }
-
     #[test]
     fn complement() {
         let x: PcSet = vec![0, 1, 2, 3, 4, 5, 6, 7];
         assert_eq!(x.complement(), vec![8, 9, 10, 11]);
     }
-
     #[test]
     fn reverse() {
         let x: PcSet = vec![0, 1, 2];
         assert_eq!(x.reverse(), vec![2, 1, 0]);
     }
-
     #[test]
     fn sort() {
         let x: PcSet = vec![3, 1, 2];
         assert_eq!(x.sort(), vec![1, 2, 3]);
     }
-
     #[test]
     fn shift() {
         let x: PcSet = vec![1, 2, 3];
         assert_eq!(x.shift(1), vec![3, 1, 2]);
         assert_eq!(x, vec![1, 2, 3]);
     }
-
     #[test]
     fn zero() {
         let x: PcSet = vec![1, 2, 3];
@@ -170,7 +159,6 @@ mod tests {
         let y: PcSet = vec![0, 1, 2];
         assert_eq!(y.zero(), vec![0, 1, 2]);
     }
-
     #[test]
     fn normal() {
         let x: PcSet = vec![8, 0, 4, 6];
@@ -178,13 +166,11 @@ mod tests {
         let y: PcSet = vec![2, 1, 3, 7, 6];
         assert_eq!(y.normal(), vec![1, 2, 3, 6, 7]);
     }
-
     #[test]
     fn reduced() {
         let x: PcSet = vec![2, 1, 3, 7, 6];
         assert_eq!(x.reduced(), vec![0, 1, 2, 5, 6]);
     }
-
     #[test]
     fn prime() {
         let v: PcSet = vec![0, 4, 6, 8];
