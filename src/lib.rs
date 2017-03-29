@@ -11,7 +11,7 @@ fn decimalvalue(pcset: &PcSet) -> i64 {
                     r => r + 12,
                 })
                 .enumerate()
-                .fold(0, |acc, (i, e)| acc + e as i64 * 10i64.pow(i as u32))
+                .fold(0, |acc, (i, e)| acc + e as i64 * 100i64.pow(i as u32))
     }
 }
 
@@ -76,8 +76,8 @@ impl SetOperations for PcSet {
         self.iter().cycle().skip(n + 1).take(self.len()).cloned().collect()
     }
     fn zero(&self) -> PcSet {
-        match self.iter().min() {
-            Some(min) => self.iter().map(|x| x - min).collect(),
+        match self.first() {
+            Some(head) => self.transpose(-head),
             None => self.clone(),
         }
     }
@@ -94,10 +94,12 @@ impl SetOperations for PcSet {
             }
         }
 
-        let sorted = self.sort();
-        let normal = (0..self.len())
-            .map(|x| sorted.shift(x))
-            .fold(None, |x, y| {
+        let sorted = self.sort().iter().fold(vec![], |acc, &x| {
+            if acc.contains(&x) { acc }
+            else { [acc, vec![x]].concat() }
+        });
+
+        let normal = (0..self.len()).map(|x| sorted.shift(x)).fold(None, |x, y| {
                 match x {
                     None => Some(y),
                     Some(x) => Some(packed(x, y)),
@@ -115,6 +117,7 @@ impl SetOperations for PcSet {
     fn prime(&self) -> PcSet {
         let original = self.normal().zero();
         let inverted = self.invert().normal().zero();
+        println!("orig: {:?}, inve: {:?}", original, inverted);
         if decimalvalue(&original) < decimalvalue(&inverted) { original }
         else { inverted }
     }
@@ -128,8 +131,14 @@ mod tests {
 
     #[test]
     fn invert() {
+        let w: PcSet = vec![0, 2, 4, 8];
+        assert_eq!(w.invert(), vec![0, 10, 8, 4]);
         let x: PcSet = vec![1, 2, 3];
         assert_eq!(x.invert(), vec![11, 10, 9]);
+        let y: PcSet = vec![0, 4, 6, 8];
+        assert_eq!(y.invert(), vec![0, 8, 6, 4]);
+        let z: PcSet = vec![8, 0, 4, 6];
+        assert_eq!(z.invert(), vec![4, 0, 8, 6]);
     }
 
     #[test]
@@ -167,6 +176,8 @@ mod tests {
     fn zero() {
         let x: PcSet = vec![1, 2, 3];
         assert_eq!(x.zero(), vec![0, 1, 2]);
+        let y: PcSet = vec![0, 1, 2];
+        assert_eq!(y.zero(), vec![0, 1, 2]);
     }
 
     #[test]
@@ -185,11 +196,15 @@ mod tests {
 
     #[test]
     fn prime() {
-        // let x: PcSet = vec![8, 0, 4, 6];
-        // assert_eq!(x.prime(), vec![0, 2, 4, 8]);
-        let y: PcSet = vec![0, 8, 6, 8];
-        assert_eq!(y.prime(), vec![0, 2, 4, 8]);
-        // let z: PcSet = vec![2, 4, 8, 9];
-        // assert_eq!(z.prime(), vec![0, 1, 4, 8]);
+        let v: PcSet = vec![0, 4, 6, 8];
+        assert_eq!(v.prime(), vec![0, 2, 4, 8]);
+        let w: PcSet = vec![8, 0, 4, 6];
+        assert_eq!(w.prime(), vec![0, 2, 4, 8]);
+        let x: PcSet = vec![1, 5, 6, 7];
+        assert_eq!(x.prime(), vec![0, 1, 2, 6]);
+        let y: PcSet = vec![3, 4, 5];
+        assert_eq!(y.prime(), vec![0, 1, 2]);
+        let z: PcSet = vec![2, 4, 8, 9];
+        assert_eq!(z.prime(), vec![0, 1, 5, 7]);
     }
 }
