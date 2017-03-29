@@ -1,17 +1,16 @@
 // TODO make less ugly or maybe throw an error on None
-fn decimalvalue(pcset: &PcSet) -> i64 {
+fn decimalvalue(pcset: &PcSet) -> Option<i64> {
     match pcset.first() {
-        None => 0,
-        Some(head) =>
-            pcset
+        None => None,
+        Some(head) => {
+            let decimalvalue = pcset
                 .iter()
                 .skip(1)
-                .map(|&x| match (x - head) % 12 {
-                    r if r >= 0 => r,
-                    r => r + 12,
-                })
+                .map(|x| (((x - head) % 12) + 12) % 12)
                 .enumerate()
-                .fold(0, |acc, (i, e)| acc + e as i64 * 100i64.pow(i as u32))
+                .fold(0, |acc, (i, e)| acc + e as i64 * 10i64.pow(i as u32));
+            Some(decimalvalue)
+        }
     }
 }
 
@@ -29,14 +28,7 @@ impl Fundamentals for PcSet {
         self.iter().map(|x| (12 - x) % 12).collect()
     }
     fn transpose(&self, n: i8) -> PcSet {
-        self.iter()
-            .map(|x| {
-                match (x + n) % 12 {
-                    r if r >= 0 => r,
-                    r => r + 12,
-                }
-            })
-            .collect()
+        self.iter().map(|x| (((x + n) % 12) + 12) % 12).collect()
     }
 }
 
@@ -83,33 +75,32 @@ impl SetOperations for PcSet {
     }
     fn normal(&self) -> PcSet {
         fn packed(x: PcSet, y: PcSet) -> PcSet {
-            let dec_x = decimalvalue(&x);
-            let dec_y = decimalvalue(&y);
-
-            if dec_x < dec_y { x }
-            else if dec_x > dec_y { y }
-            else {
-                if x.first() < y.first() { x }
-                else { y }
+            match (decimalvalue(&x), decimalvalue(&y)){
+                (None, None) => vec![],
+                (_, None) => x,
+                (None, _) => y,
+                (Some(a), Some(b)) => {
+                    if a < b { x }
+                    else if a > b { y }
+                    else {
+                        if x.first() < y.first() { x }
+                        else { y }
+                    }
+                },
             }
         }
 
-        let sorted = self.sort().iter().fold(vec![], |acc, &x| {
-            if acc.contains(&x) { acc }
-            else { [acc, vec![x]].concat() }
-        });
+        let sorted = self
+                        .sort()
+                        .iter()
+                        .fold(vec![], |acc, &x| {
+                            if acc.contains(&x) { acc }
+                            else { [acc, vec![x]].concat() }
+                        });
 
-        let normal = (0..self.len()).map(|x| sorted.shift(x)).fold(None, |x, y| {
-                match x {
-                    None => Some(y),
-                    Some(x) => Some(packed(x, y)),
-                }
-            });
-
-        match normal {
-            None => self.clone(),
-            Some(x) => x,
-        }
+        (0..self.len())
+            .map(|x| sorted.shift(x))
+            .fold(vec![], |x, y| packed(x, y))
     }
     fn reduced(&self) -> PcSet {
         self.normal().zero()
