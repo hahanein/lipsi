@@ -30,10 +30,16 @@ fn packed(x: PcSet, y: PcSet) -> PcSet {
 }
 
 type PcSet = Vec<i8>;
+type IVec = [i8; 6];
+type CVec = [i8; 12];
 
 trait Fundamentals {
     fn invert(&self) -> Self;
     fn transpose(&self, i8) -> Self;
+    fn i(&self) -> Self;
+    fn t(&self, i8) -> Self;
+    fn tni(&self, i8) -> Self;
+    fn ixy(&self, i8, i8) -> Self;
 }
 
 impl Fundamentals for PcSet {
@@ -42,6 +48,18 @@ impl Fundamentals for PcSet {
     }
     fn transpose(&self, n: i8) -> PcSet {
         self.iter().map(|x| (((x + n) % 12) + 12) % 12).collect()
+    }
+    fn i(&self) -> PcSet {
+        self.invert()
+    }
+    fn t(&self, n: i8) -> PcSet {
+        self.transpose(n)
+    }
+    fn tni(&self, n: i8) -> PcSet {
+        self.invert().transpose(n)
+    }
+    fn ixy(&self, x: i8, y: i8) -> PcSet {
+        self.invert().transpose(x+y)
     }
 }
 
@@ -109,6 +127,10 @@ impl SetOperations for PcSet {
     }
 }
 
+trait SetAnalysis {
+    fn ivec(&self) -> IVec;
+    fn cvec(&self) -> CVec;
+}
 #[cfg(test)]
 mod tests {
     use Fundamentals;
