@@ -15,8 +15,7 @@ fn decimalvalue(pcset: &PcSet) -> Option<i64> {
 
 fn packed(x: PcSet, y: PcSet) -> PcSet {
     match (decimalvalue(&x), decimalvalue(&y)){
-        (None, None) => vec![],
-        (_, None) => x,
+        (_, None) => x, // not sure what to do about (None, None)
         (None, _) => y,
         (Some(a), Some(b)) => {
             if a < b { x }
