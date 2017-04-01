@@ -78,7 +78,7 @@ impl SetOperations for PcSet {
         (0..12).filter(|x| !self.contains(x)).collect()
     }
     fn reverse(&self) -> PcSet {
-        self.iter().fold(vec![], |acc, &x| [vec![x], acc].concat())
+        self.iter().rev().cloned().collect()
     }
     /// Implementation of the insertion sort algorithm for performant sorting of
     /// (quite) small data sets.
