@@ -81,7 +81,7 @@ impl SetOperations for PcSet {
         self.iter().fold(vec![], |acc, &x| [vec![x], acc].concat())
     }
     /// Implementation of the insertion sort algorithm for performant sorting of
-    /// (quite) small data sets
+    /// (quite) small data sets.
     fn sort(&self) -> PcSet {
         let mut clone = self.clone();
         let mut temp: i8;
@@ -106,10 +106,8 @@ impl SetOperations for PcSet {
         }
     }
     fn normal(&self) -> PcSet {
-        let sorted = self.sort().iter().fold(vec![], |acc, &x| {
-            if acc.contains(&x) { acc }
-            else { [acc, vec![x]].concat() }
-        });
+        let mut sorted = self.sort();
+        sorted.dedup();
 
         (0..self.len())
             .map(|x| sorted.shift(x))
@@ -130,11 +128,40 @@ trait SetAnalysis {
     fn ivec(&self) -> IVec;
     fn cvec(&self) -> CVec;
 }
+
+impl SetAnalysis for PcSet {
+    fn ivec(&self) -> IVec {
+        match self.split_first() {
+            Some((head, tail)) =>
+            {
+                let is: Vec<i8> = tail.iter().map(|x| (x - head) % 6).collect();
+
+                let mut temp = [0i8; 6];
+
+                for i in 0..6 {
+                    temp[i] = is
+                                .iter()
+                                .filter(|&x| *x == i as i8 + 1)
+                                .count() as i8
+                }
+                temp
+            },
+            None => [1,2,3,4,5,6],
+        }
+    }
+    /// Dummy data
+    fn cvec(&self) -> CVec {
+        [1,2,3,4,5,6,7,8,9,10,11,12]
+    }
+}
 #[cfg(test)]
 mod tests {
     use Fundamentals;
     use SetOperations;
+    use SetAnalysis;
     use PcSet;
+    use IVec;
+    use CVec;
 
     #[test]
     fn invert() {
@@ -186,6 +213,8 @@ mod tests {
         assert_eq!(x.normal(), vec![4, 6, 8, 0]);
         let y: PcSet = vec![2, 1, 3, 7, 6];
         assert_eq!(y.normal(), vec![1, 2, 3, 6, 7]);
+        assert_eq!(x, vec![8, 0, 4, 6]);
+        assert_eq!(y, vec![2, 1, 3, 7, 6]);
     }
     #[test]
     fn reduced() {
@@ -204,5 +233,10 @@ mod tests {
         assert_eq!(y.prime(), vec![0, 1, 2]);
         let z: PcSet = vec![2, 4, 8, 9];
         assert_eq!(z.prime(), vec![0, 1, 5, 7]);
+    }
+    #[test]
+    fn ivec() {
+        let v: PcSet = vec![1,2,3];
+        assert_eq!(v.ivec(), [0,4,5,6,3,5]);
     }
 }
