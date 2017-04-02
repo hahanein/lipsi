@@ -29,7 +29,7 @@ fn packed(x: PcSet, y: PcSet) -> PcSet {
 }
 
 type PcSet = Vec<i8>;
-type IVec = [i8; 6];
+type IcVec = [usize; 6];
 type CVec = [i8; 12];
 
 trait Fundamentals {
@@ -80,8 +80,6 @@ impl SetOperations for PcSet {
     fn reverse(&self) -> PcSet {
         self.iter().rev().cloned().collect()
     }
-    /// Implementation of the insertion sort algorithm for performant sorting of
-    /// (quite) small data sets.
     fn sort(&self) -> PcSet {
         let mut clone = self.clone();
         let mut temp: i8;
@@ -125,31 +123,37 @@ impl SetOperations for PcSet {
 }
 
 trait SetAnalysis {
-    fn ivec(&self) -> IVec;
+    fn icvec(&self) -> IcVec;
     fn cvec(&self) -> CVec;
 }
 
 impl SetAnalysis for PcSet {
-    fn ivec(&self) -> IVec {
-        match self.split_first() {
-            Some((head, tail)) =>
-            {
-                let is: Vec<i8> = tail.iter().map(|x| (x - head) % 6).collect();
-
-                let mut temp = [0i8; 6];
-
-                for i in 0..6 {
-                    temp[i] = is
-                                .iter()
-                                .filter(|&x| *x == i as i8 + 1)
-                                .count() as i8
-                }
-                temp
-            },
-            None => [1,2,3,4,5,6],
+    fn icvec(&self) -> IcVec {
+        fn ivec(pcset: &PcSet) -> Vec<i8> {
+            match pcset.split_first() {
+                Some((head, tail)) =>
+                    tail.iter()
+                        .map(|x| match (x - head) % 12 {
+                                n if n > 6 => (12 - n) % 12,
+                                n => n,
+                            }
+                        )
+                        .chain(ivec(&tail.to_vec()).iter().cloned())
+                        .collect(),
+                None => vec![],
+            }
         }
+
+        let ivec = ivec(self);
+
+        [ ivec.iter().filter(|&x| *x == 1 ).count()
+        , ivec.iter().filter(|&x| *x == 2 ).count()
+        , ivec.iter().filter(|&x| *x == 3 ).count()
+        , ivec.iter().filter(|&x| *x == 4 ).count()
+        , ivec.iter().filter(|&x| *x == 5 ).count()
+        , ivec.iter().filter(|&x| *x == 6 ).count()
+        ]
     }
-    /// Dummy data
     fn cvec(&self) -> CVec {
         [1,2,3,4,5,6,7,8,9,10,11,12]
     }
@@ -160,8 +164,6 @@ mod tests {
     use SetOperations;
     use SetAnalysis;
     use PcSet;
-    use IVec;
-    use CVec;
 
     #[test]
     fn invert() {
@@ -235,8 +237,8 @@ mod tests {
         assert_eq!(z.prime(), vec![0, 1, 5, 7]);
     }
     #[test]
-    fn ivec() {
-        let v: PcSet = vec![1,2,3];
-        assert_eq!(v.ivec(), [0,4,5,6,3,5]);
+    fn icvec() {
+        let v: PcSet = vec![0, 2, 4, 5, 7, 9, 11];
+        assert_eq!(v.icvec(), [2,5,4,3,6,1]);
     }
 }
