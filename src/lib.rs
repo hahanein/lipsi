@@ -29,7 +29,7 @@ fn packed(x: PcSet, y: PcSet) -> PcSet {
 }
 
 type PcSet = Vec<i8>;
-type IcVec = [usize; 6];
+type IVec = [usize; 6];
 type CVec = [i8; 12];
 
 trait Fundamentals {
@@ -123,13 +123,13 @@ impl SetOperations for PcSet {
 }
 
 trait SetAnalysis {
-    fn icvec(&self) -> IcVec;
+    fn ivec(&self) -> IVec;
     fn cvec(&self) -> CVec;
 }
 
 impl SetAnalysis for PcSet {
-    fn icvec(&self) -> IcVec {
-        fn ivec(pcset: &PcSet) -> Vec<i8> {
+    fn ivec(&self) -> IVec {
+        fn intervals(pcset: &PcSet) -> Vec<i8> {
             match pcset.split_first() {
                 Some((head, tail)) =>
                     tail.iter()
@@ -138,20 +138,20 @@ impl SetAnalysis for PcSet {
                                 n => n,
                             }
                         )
-                        .chain(ivec(&tail.to_vec()).iter().cloned())
+                        .chain(intervals(&tail.to_vec()).iter().cloned())
                         .collect(),
                 None => vec![],
             }
         }
 
-        let ivec = ivec(self);
+        let intervals = intervals(self);
 
-        [ ivec.iter().filter(|&x| *x == 1 ).count()
-        , ivec.iter().filter(|&x| *x == 2 ).count()
-        , ivec.iter().filter(|&x| *x == 3 ).count()
-        , ivec.iter().filter(|&x| *x == 4 ).count()
-        , ivec.iter().filter(|&x| *x == 5 ).count()
-        , ivec.iter().filter(|&x| *x == 6 ).count()
+        [ intervals.iter().filter(|&x| *x == 1 ).count()
+        , intervals.iter().filter(|&x| *x == 2 ).count()
+        , intervals.iter().filter(|&x| *x == 3 ).count()
+        , intervals.iter().filter(|&x| *x == 4 ).count()
+        , intervals.iter().filter(|&x| *x == 5 ).count()
+        , intervals.iter().filter(|&x| *x == 6 ).count()
         ]
     }
     fn cvec(&self) -> CVec {
@@ -237,8 +237,8 @@ mod tests {
         assert_eq!(z.prime(), vec![0, 1, 5, 7]);
     }
     #[test]
-    fn icvec() {
+    fn ivec() {
         let v: PcSet = vec![0, 2, 4, 5, 7, 9, 11];
-        assert_eq!(v.icvec(), [2,5,4,3,6,1]);
+        assert_eq!(v.ivec(), [2,5,4,3,6,1]);
     }
 }
