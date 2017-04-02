@@ -28,9 +28,9 @@ fn packed(x: PcSet, y: PcSet) -> PcSet {
     }
 }
 
-type PcSet = Vec<i8>;
-type IVec = [usize; 6];
-type CVec = [i8; 12];
+pub type PcSet = Vec<i8>;
+pub type IVec = [usize; 6];
+pub type CVec = [i8; 12];
 
 trait Fundamentals {
     fn invert(&self) -> Self;
