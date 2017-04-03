@@ -4,5 +4,6 @@ version = "1.0.0"
 authors = ["hahanein <binjamin@riseup.net>"]
 description = "Pitch Class Sets for Rust"
 license = "GPL-3.0"
+repository = "https://github.com/hahanein/lipsi.git"
 
 [dependencies]
