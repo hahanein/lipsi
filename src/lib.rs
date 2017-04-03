@@ -29,8 +29,8 @@ fn packed(x: PcSet, y: PcSet) -> PcSet {
 }
 
 pub type PcSet = Vec<i8>;
-pub type IVec = [usize; 6];
-pub type CVec = [i8; 12];
+pub type IcVec = [usize; 6];
+pub type IVec = [usize; 12];
 
 trait Fundamentals {
     fn invert(&self) -> Self;
@@ -64,7 +64,7 @@ impl Fundamentals for PcSet {
 
 trait SetOperations {
     fn complement(&self) -> Self;
-    fn reverse(&self) -> Self;
+    fn retrograde(&self) -> Self;
     fn sort(&self) -> Self;
     fn shift(&self, usize) -> Self;
     fn zero(&self) -> Self;
@@ -77,7 +77,7 @@ impl SetOperations for PcSet {
     fn complement(&self) -> PcSet {
         (0..12).filter(|x| !self.contains(x)).collect()
     }
-    fn reverse(&self) -> PcSet {
+    fn retrograde(&self) -> PcSet {
         self.iter().rev().cloned().collect()
     }
     fn sort(&self) -> PcSet {
@@ -123,13 +123,15 @@ impl SetOperations for PcSet {
 }
 
 trait SetAnalysis {
+    /// Returns the Interval-Class Vector
+    fn icvec(&self) -> IcVec;
+    /// Returns the Index Vector
     fn ivec(&self) -> IVec;
-    fn cvec(&self) -> CVec;
 }
 
 impl SetAnalysis for PcSet {
-    fn ivec(&self) -> IVec {
-        fn intervals(pcset: &PcSet) -> Vec<i8> {
+    fn icvec(&self) -> IcVec {
+        fn f(pcset: &PcSet) -> Vec<i8> {
             match pcset.split_first() {
                 Some((head, tail)) =>
                     tail.iter()
@@ -138,13 +140,13 @@ impl SetAnalysis for PcSet {
                                 n => n,
                             }
                         )
-                        .chain(intervals(&tail.to_vec()).iter().cloned())
-                        .collect(),
-                None => vec![],
+                        .chain(f(&tail.to_vec()).iter().cloned())
+                    .collect(),
+            None => vec![],
             }
         }
 
-        let intervals = intervals(self);
+        let intervals = f(self);
 
         [ intervals.iter().filter(|&x| *x == 1 ).count()
         , intervals.iter().filter(|&x| *x == 2 ).count()
@@ -154,8 +156,27 @@ impl SetAnalysis for PcSet {
         , intervals.iter().filter(|&x| *x == 6 ).count()
         ]
     }
-    fn cvec(&self) -> CVec {
-        [1,2,3,4,5,6,7,8,9,10,11,12]
+    fn ivec(&self) -> IVec {
+        let intervals: Vec<i8> = self
+                                    .iter()
+                                    .flat_map(|x| {
+                                        self.iter().map(move |y| (y + x) % 12)
+                                    })
+                                    .collect();
+
+        [ intervals.iter().filter(|&x| *x == 0 ).count()
+        , intervals.iter().filter(|&x| *x == 1 ).count()
+        , intervals.iter().filter(|&x| *x == 2 ).count()
+        , intervals.iter().filter(|&x| *x == 3 ).count()
+        , intervals.iter().filter(|&x| *x == 4 ).count()
+        , intervals.iter().filter(|&x| *x == 5 ).count()
+        , intervals.iter().filter(|&x| *x == 6 ).count()
+        , intervals.iter().filter(|&x| *x == 7 ).count()
+        , intervals.iter().filter(|&x| *x == 8 ).count()
+        , intervals.iter().filter(|&x| *x == 9 ).count()
+        , intervals.iter().filter(|&x| *x == 10 ).count()
+        , intervals.iter().filter(|&x| *x == 11 ).count()
+        ]
     }
 }
 #[cfg(test)]
@@ -187,9 +208,9 @@ mod tests {
         assert_eq!(x.complement(), vec![8, 9, 10, 11]);
     }
     #[test]
-    fn reverse() {
+    fn retrograde() {
         let x: PcSet = vec![0, 1, 2];
-        assert_eq!(x.reverse(), vec![2, 1, 0]);
+        assert_eq!(x.retrograde(), vec![2, 1, 0]);
     }
     #[test]
     fn sort() {
@@ -237,8 +258,15 @@ mod tests {
         assert_eq!(z.prime(), vec![0, 1, 5, 7]);
     }
     #[test]
-    fn ivec() {
+    fn icvec() {
         let v: PcSet = vec![0, 2, 4, 5, 7, 9, 11];
-        assert_eq!(v.ivec(), [2,5,4,3,6,1]);
+        assert_eq!(v.icvec(), [2,5,4,3,6,1]);
+    }
+    #[test]
+    fn ivec() {
+        let v: PcSet = vec![8, 9, 0];
+        assert_eq!(v.ivec(), [1,0,0,0,1,2,1,0,2,2,0,0]);
+        let v: PcSet = vec![0, 3, 4];
+        assert_eq!(v.ivec(), [1,0,0,2,2,0,1,2,1,0,0,0]);
     }
 }
