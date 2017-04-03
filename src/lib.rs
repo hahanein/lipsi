@@ -2,7 +2,8 @@ fn decimalvalue(pcset: &PcSet) -> Option<i64> {
     match pcset.first() {
         None => None,
         Some(head) => {
-            let decimalvalue = pcset
+            let decimalvalue =
+                pcset
                 .iter()
                 .skip(1)
                 .map(|x| (((x - head) % 12) + 12) % 12)
@@ -108,8 +109,8 @@ impl SetOperations for PcSet {
         sorted.dedup();
 
         (0..self.len())
-            .map(|x| sorted.shift(x))
-            .fold(vec![], |x, y| packed(x, y))
+        .map(|x| sorted.shift(x))
+        .fold(vec![], |x, y| packed(x, y))
     }
     fn reduced(&self) -> PcSet {
         self.normal().zero()
@@ -134,13 +135,14 @@ impl SetAnalysis for PcSet {
         fn f(pcset: &PcSet) -> Vec<i8> {
             match pcset.split_first() {
                 Some((head, tail)) =>
-                    tail.iter()
-                        .map(|x| match (x - head) % 12 {
-                                n if n > 6 => (12 - n) % 12,
-                                n => n,
-                            }
-                        )
-                        .chain(f(&tail.to_vec()).iter().cloned())
+                    tail
+                    .iter()
+                    .map(|x| match (x - head) % 12 {
+                            n if n > 6 => (12 - n) % 12,
+                            n => n,
+                        }
+                    )
+                    .chain(f(&tail.to_vec()).iter().cloned())
                     .collect(),
             None => vec![],
             }
@@ -157,12 +159,11 @@ impl SetAnalysis for PcSet {
         ]
     }
     fn ivec(&self) -> IVec {
-        let intervals: Vec<i8> = self
-                                    .iter()
-                                    .flat_map(|x| {
-                                        self.iter().map(move |y| (y + x) % 12)
-                                    })
-                                    .collect();
+        let intervals: Vec<i8> =
+            self
+            .iter()
+            .flat_map(|x| self.iter().map(move |y| (y + x) % 12))
+            .collect();
 
         [ intervals.iter().filter(|&x| *x == 0 ).count()
         , intervals.iter().filter(|&x| *x == 1 ).count()
