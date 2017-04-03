@@ -1,6 +1,6 @@
 [package]
 name = "lipsi"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["hahanein <binjamin@riseup.net>"]
 description = "Pitch Class Sets for Rust"
 license = "GPL-3.0"
