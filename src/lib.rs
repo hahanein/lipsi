@@ -14,20 +14,6 @@ fn decimalvalue(pcset: &PcSet) -> Option<i64> {
     }
 }
 
-fn packed(x: PcSet, y: PcSet) -> PcSet {
-    match (decimalvalue(&x), decimalvalue(&y)){
-        (_, None) => x, // not sure what to do about (None, None)
-        (None, _) => y,
-        (Some(a), Some(b)) => {
-            if a < b { x }
-            else if a > b { y }
-            else {
-                if x.first() < y.first() { x }
-                else { y }
-            }
-        },
-    }
-}
 
 pub type PcSet = Vec<i8>;
 pub type IcVec = [usize; 6];
@@ -110,7 +96,18 @@ impl SetOperations for PcSet {
 
         (0..self.len())
         .map(|x| sorted.shift(x))
-        .fold(vec![], |x, y| packed(x, y))
+        .fold(vec![], |x, y| match (decimalvalue(&x), decimalvalue(&y)){
+                (_, None) => x, // not sure what to do about (None, None)
+                (None, _) => y,
+                (Some(a), Some(b)) => {
+                    if a < b { x }
+                    else if a > b { y }
+                    else {
+                        if x.first() < y.first() { x }
+                        else { y }
+                    }
+                },
+        })
     }
     fn reduced(&self) -> PcSet {
         self.normal().zero()
@@ -265,9 +262,9 @@ mod tests {
     }
     #[test]
     fn ivec() {
-        let v: PcSet = vec![8, 9, 0];
-        assert_eq!(v.ivec(), [1,0,0,0,1,2,1,0,2,2,0,0]);
-        let v: PcSet = vec![0, 3, 4];
-        assert_eq!(v.ivec(), [1,0,0,2,2,0,1,2,1,0,0,0]);
+        let x: PcSet = vec![8, 9, 0];
+        assert_eq!(x.ivec(), [1,0,0,0,1,2,1,0,2,2,0,0]);
+        let y: PcSet = vec![0, 3, 4];
+        assert_eq!(y.ivec(), [1,0,0,2,2,0,1,2,1,0,0,0]);
     }
 }
