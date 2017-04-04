@@ -86,7 +86,7 @@ impl SetOperations for PcSet {
     }
     fn zero(&self) -> PcSet {
         match self.first() {
-            Some(head) => self.transpose(-head),
+            Some(head) => self.transpose(12 - head),
             None => self.clone(),
         }
     }
