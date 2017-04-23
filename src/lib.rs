@@ -79,7 +79,7 @@ impl SetOperations for PcSet {
             }
             clone[j] = temp;
         }
-        return clone;
+        clone
     }
     fn shift(&self, n: usize) -> PcSet {
         self.iter().cycle().skip(n + 1).take(self.len()).cloned().collect()
