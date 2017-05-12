@@ -1,3 +1,5 @@
+#![crate_name = "lipsi"]
+
 fn decimalvalue(pcset: &PcSet) -> Option<i64> {
     match pcset.first() {
         None => None,
@@ -20,32 +22,41 @@ pub type IcVec = [usize; 6];
 pub type IVec = [usize; 12];
 
 trait Fundamentals {
-    fn invert(&self) -> Self;
-    fn transpose(&self, i8) -> Self;
-    fn i(&self) -> Self;
-    fn t(&self, i8) -> Self;
-    fn tni(&self, i8) -> Self;
-    fn ixy(&self, i8, i8) -> Self;
+    pub fn invert(&self) -> Self;
+    pub fn transpose(&self, i8) -> Self;
+    pub fn i(&self) -> Self;
+    pub fn t(&self, i8) -> Self;
+    pub fn tni(&self, i8) -> Self;
+    pub fn ixy(&self, i8, i8) -> Self;
+    pub fn chroma(&self) -> u8;
 }
 
 impl Fundamentals for PcSet {
-    fn invert(&self) -> PcSet {
+    /// Returns the inversion of the pitch-class set.
+    pub fn invert(&self) -> PcSet {
         self.iter().map(|x| (12 - x) % 12).collect()
     }
-    fn transpose(&self, n: i8) -> PcSet {
+    /// Returns the transposition of the pitch-class set by _n_ semitones.
+    pub fn transpose(&self, n: i8) -> PcSet {
         self.iter().map(|x| (((x + n) % 12) + 12) % 12).collect()
     }
-    fn i(&self) -> PcSet {
+    /// Returns the inversion of the pitch-class set.
+    pub fn i(&self) -> PcSet {
         self.invert()
     }
-    fn t(&self, n: i8) -> PcSet {
+    /// Returns the transposition of the pitch-class set by _n_ semitones.
+    pub fn t(&self, n: i8) -> PcSet {
         self.transpose(n)
     }
-    fn tni(&self, n: i8) -> PcSet {
+    pub fn tni(&self, n: i8) -> PcSet {
         self.invert().transpose(n)
     }
-    fn ixy(&self, x: i8, y: i8) -> PcSet {
+    pub fn ixy(&self, x: i8, y: i8) -> PcSet {
         self.invert().transpose(x+y)
+    }
+    pub fn chroma(&self) -> u8 {
+        (0..12).map(|x| self.contains(&x))
+            .fold(0 as u8, |acc, x| (acc << 1) | x as u8)
     }
 }
 
@@ -199,6 +210,11 @@ mod tests {
     fn transpose() {
         let x: PcSet = vec![1, 2, 3];
         assert_eq!(x.transpose(-14), vec![11, 0, 1]);
+    }
+    #[test]
+    fn chroma() {
+        let x: PcSet = vec![0, 2, 4];
+        assert_eq!(x.chroma(), 128 as u8);
     }
     #[test]
     fn complement() {
