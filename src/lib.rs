@@ -1,5 +1,3 @@
-#![crate_name = "lipsi"]
-
 fn decimalvalue(pcset: &PcSet) -> Option<i64> {
     match pcset.first() {
         None => None,
@@ -22,39 +20,42 @@ pub type IcVec = [usize; 6];
 pub type IVec = [usize; 12];
 
 trait Fundamentals {
-    pub fn invert(&self) -> Self;
-    pub fn transpose(&self, i8) -> Self;
-    pub fn i(&self) -> Self;
-    pub fn t(&self, i8) -> Self;
-    pub fn tni(&self, i8) -> Self;
-    pub fn ixy(&self, i8, i8) -> Self;
-    pub fn chroma(&self) -> u8;
+    fn invert(&self) -> Self;
+    fn transpose(&self, i8) -> Self;
+    fn i(&self) -> Self;
+    fn t(&self, i8) -> Self;
+    fn tni(&self, i8) -> Self;
+    fn ixy(&self, i8, i8) -> Self;
+    fn chroma(&self) -> u8;
 }
 
 impl Fundamentals for PcSet {
     /// Returns the inversion of the pitch-class set.
-    pub fn invert(&self) -> PcSet {
+    fn invert(&self) -> PcSet {
         self.iter().map(|x| (12 - x) % 12).collect()
     }
     /// Returns the transposition of the pitch-class set by _n_ semitones.
-    pub fn transpose(&self, n: i8) -> PcSet {
+    fn transpose(&self, n: i8) -> PcSet {
         self.iter().map(|x| (((x + n) % 12) + 12) % 12).collect()
     }
     /// Returns the inversion of the pitch-class set.
-    pub fn i(&self) -> PcSet {
+    fn i(&self) -> PcSet {
         self.invert()
     }
     /// Returns the transposition of the pitch-class set by _n_ semitones.
-    pub fn t(&self, n: i8) -> PcSet {
+    fn t(&self, n: i8) -> PcSet {
         self.transpose(n)
     }
-    pub fn tni(&self, n: i8) -> PcSet {
+    /// Inverts the pitch-class set, then returns the transposition by _n_
+    /// semitones.
+    fn tni(&self, n: i8) -> PcSet {
         self.invert().transpose(n)
     }
-    pub fn ixy(&self, x: i8, y: i8) -> PcSet {
+    fn ixy(&self, x: i8, y: i8) -> PcSet {
         self.invert().transpose(x+y)
     }
-    pub fn chroma(&self) -> u8 {
+    /// Returns the binary representation of the pitch-class chroma feature
+    fn chroma(&self) -> u8 {
         (0..12).map(|x| self.contains(&x))
             .fold(0 as u8, |acc, x| (acc << 1) | x as u8)
     }
@@ -72,12 +73,15 @@ trait SetOperations {
 }
 
 impl SetOperations for PcSet {
+    /// Returns the complement of the pitch-class set
     fn complement(&self) -> PcSet {
         (0..12).filter(|x| !self.contains(x)).collect()
     }
+    /// Returns the retrograde of the pitch-class set
     fn retrograde(&self) -> PcSet {
         self.iter().rev().cloned().collect()
     }
+    /// Returns the sorted pitch-class set in ascending order
     fn sort(&self) -> PcSet {
         let mut clone = self.clone();
         let mut temp: i8;
@@ -92,7 +96,8 @@ impl SetOperations for PcSet {
         }
         clone
     }
-    fn shift(&self, n: usize) -> PcSet {
+    /// Returns the rotation of the pitch-class set by _n_ semitones
+    fn rotate(&self, n: usize) -> PcSet {
         self.iter().cycle().skip(n + 1).take(self.len()).cloned().collect()
     }
     fn zero(&self) -> PcSet {
@@ -188,6 +193,7 @@ impl SetAnalysis for PcSet {
         ]
     }
 }
+
 #[cfg(test)]
 mod tests {
     use Fundamentals;
