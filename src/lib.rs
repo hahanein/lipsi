@@ -1,3 +1,4 @@
+/// Helper function that returns a decimal representation of the pitch-class set
 fn decimalvalue(pcset: &PcSet) -> Option<i64> {
     match pcset.first() {
         None => None,
@@ -51,6 +52,8 @@ impl Fundamentals for PcSet {
     fn tni(&self, n: i8) -> PcSet {
         self.invert().transpose(n)
     }
+    /// Returns the transposition of the pitch-class set by _y_ semitones around
+    /// the axis _x_
     fn ixy(&self, x: i8, y: i8) -> PcSet {
         self.invert().transpose(x+y)
     }
@@ -106,6 +109,7 @@ impl SetOperations for PcSet {
             None => self.clone(),
         }
     }
+    /// Returns the normal form of the pitch-class set
     fn normal(&self) -> PcSet {
         let mut sorted = self.sort();
         sorted.dedup();
@@ -128,6 +132,7 @@ impl SetOperations for PcSet {
     fn reduced(&self) -> PcSet {
         self.normal().zero()
     }
+    /// Returns the prime form of the pitch-class set
     fn prime(&self) -> PcSet {
         let original = self.normal().zero();
         let inverted = self.invert().normal().zero();
@@ -144,6 +149,7 @@ trait SetAnalysis {
 }
 
 impl SetAnalysis for PcSet {
+    /// Returns the interval-class vector of the pitch-class set
     fn icvec(&self) -> IcVec {
         fn f(pcset: &PcSet) -> Vec<i8> {
             match pcset.split_first() {
@@ -171,6 +177,7 @@ impl SetAnalysis for PcSet {
         , intervals.iter().filter(|&x| *x == 6 ).count()
         ]
     }
+    /// Returns the interval vector of the pitch-class set
     fn ivec(&self) -> IVec {
         let intervals: Vec<i8> =
             self
