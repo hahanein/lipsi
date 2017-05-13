@@ -65,7 +65,7 @@ trait SetOperations {
     fn complement(&self) -> Self;
     fn retrograde(&self) -> Self;
     fn sort(&self) -> Self;
-    fn shift(&self, usize) -> Self;
+    fn rotate(&self, usize) -> Self;
     fn zero(&self) -> Self;
     fn normal(&self) -> Self;
     fn reduced(&self) -> Self;
@@ -111,7 +111,7 @@ impl SetOperations for PcSet {
         sorted.dedup();
 
         (0..self.len())
-        .map(|x| sorted.shift(x))
+        .map(|x| sorted.rotate(x))
         .fold(vec![], |x, y| match (decimalvalue(&x), decimalvalue(&y)){
                 (_, None) => x, // not sure what to do about (None, None)
                 (None, _) => y,
@@ -238,9 +238,9 @@ mod tests {
         assert_eq!(x.sort(), vec![1, 2, 3]);
     }
     #[test]
-    fn shift() {
+    fn rotate() {
         let x: PcSet = vec![1, 2, 3];
-        assert_eq!(x.shift(1), vec![3, 1, 2]);
+        assert_eq!(x.rotate(1), vec![3, 1, 2]);
         assert_eq!(x, vec![1, 2, 3]);
     }
     #[test]
