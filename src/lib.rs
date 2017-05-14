@@ -1,21 +1,3 @@
-/// Helper function that returns a decimal representation of the pitch-class set
-fn decimalvalue(pcset: &PcSet) -> Option<i64> {
-    match pcset.first() {
-        None => None,
-        Some(head) => {
-            let decimalvalue =
-                pcset
-                .iter()
-                .skip(1)
-                .map(|x| (((x - head) % 12) + 12) % 12)
-                .enumerate()
-                .fold(0, |acc, (i, e)| acc + e as i64 * 10i64.pow(i as u32));
-            Some(decimalvalue)
-        }
-    }
-}
-
-
 pub type PcSet = Vec<i8>;
 pub type IcVec = [usize; 6];
 pub type IVec = [usize; 12];
@@ -113,22 +95,29 @@ impl SetOperations for PcSet {
     }
     /// Returns the normal form of the pitch-class set
     fn normal(&self) -> PcSet {
+        /// Helper function that returns a vector containing the
+        /// interval-classes for the first and n to last pitch-class in a
+        /// pitch-class set
+        fn intervals(pcset: &PcSet) -> Vec<i8> {
+            match pcset.first() {
+                None =>vec![],
+                Some(first) =>
+                    pcset
+                    .iter()
+                    .rev()
+                    .map(|x| (((x - first) % 12) + 12) % 12)
+                    .collect(),
+            }
+        }
+
         let mut sorted = self.sort();
         sorted.dedup();
 
         (0..self.len())
         .map(|x| sorted.rotate(x))
-        .fold(vec![], |x, y| match (decimalvalue(&x), decimalvalue(&y)){
-                (_, None) => x, // not sure what to do about (None, None)
-                (None, _) => y,
-                (Some(a), Some(b)) => {
-                    if a < b { x }
-                    else if a > b { y }
-                    else {
-                        if x.first() < y.first() { x }
-                        else { y }
-                    }
-                },
+        .fold(sorted.clone(), |x, y| {
+            if intervals(&x) > intervals(&y) { y }
+            else { x }
         })
     }
     fn reduced(&self) -> PcSet {
