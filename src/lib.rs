@@ -57,6 +57,7 @@ trait SetOperations {
     fn normal(&self) -> Self;
     fn reduced(&self) -> Self;
     fn prime(&self) -> Self;
+    fn intervals(&self) -> Vec<i8>;
 }
 
 impl SetOperations for PcSet {
@@ -95,40 +96,38 @@ impl SetOperations for PcSet {
     }
     /// Returns the normal form of the pitch-class set
     fn normal(&self) -> PcSet {
-        /// Helper function that returns a vector containing the
-        /// interval-classes for the first and n to last pitch-class in a
-        /// pitch-class set
-        fn intervals(pcset: &PcSet) -> Vec<i8> {
-            match pcset.first() {
-                None =>vec![],
-                Some(first) =>
-                    pcset
-                    .iter()
-                    .rev()
-                    .map(|x| (((x - first) % 12) + 12) % 12)
-                    .collect(),
-            }
-        }
-
         let mut sorted = self.sort();
         sorted.dedup();
 
-        (0..self.len())
-        .map(|x| sorted.rotate(x))
-        .fold(sorted.clone(), |x, y| {
-            if intervals(&x) > intervals(&y) { y }
-            else { x }
-        })
+        (0..{self.len()})
+            .map(|x| sorted.rotate(x))
+            .fold(sorted.clone(), |x, y| {
+                if x.intervals() > y.intervals() { y }
+                else { x }
+            })
     }
     fn reduced(&self) -> PcSet {
         self.normal().zero()
     }
     /// Returns the prime form of the pitch-class set
     fn prime(&self) -> PcSet {
-        let original = self.normal().zero();
-        let inverted = self.invert().normal().zero();
-        if decimalvalue(&original) < decimalvalue(&inverted) { original }
-        else { inverted }
+        let a = self.normal().zero();
+        let b = self.invert().normal().zero();
+        if a.intervals() < b.intervals() { a }
+        else { b }
+    }
+    /// Helper function that returns a vector containing the
+    /// interval-classes for the first and n to last pitch-class in a
+    /// pitch-class set
+    fn intervals(&self) -> Vec<i8> {
+        match self.first() {
+            None =>vec![],
+            Some(first) =>
+                self.iter()
+                    .rev()
+                    .map(|x| (((x - first) % 12) + 12) % 12)
+                    .collect(),
+        }
     }
 }
 
@@ -150,8 +149,7 @@ impl SetAnalysis for PcSet {
                     .map(|x| match (x - head) % 12 {
                             n if n > 6 => (12 - n) % 12,
                             n => n,
-                        }
-                    )
+                    })
                     .chain(f(&tail.to_vec()).iter().cloned())
                     .collect(),
             None => vec![],
