@@ -27,7 +27,7 @@ trait Fundamentals {
     fn t(&self, i8) -> Self;
     fn tni(&self, i8) -> Self;
     fn ixy(&self, i8, i8) -> Self;
-    fn chroma(&self) -> u8;
+    fn chroma(&self) -> u16;
 }
 
 impl Fundamentals for PcSet {
@@ -58,9 +58,11 @@ impl Fundamentals for PcSet {
         self.invert().transpose(x+y)
     }
     /// Returns the binary representation of the pitch-class chroma feature
-    fn chroma(&self) -> u8 {
-        (0..12).map(|x| self.contains(&x))
-            .fold(0 as u8, |acc, x| (acc << 1) | x as u8)
+    fn chroma(&self) -> u16 {
+        (0..12)
+            .map(|x| self.contains(&x))
+            .rev()
+            .fold(0 as u16, |acc, x| (acc << 1) | x as u16)
     }
 }
 
@@ -227,7 +229,9 @@ mod tests {
     #[test]
     fn chroma() {
         let x: PcSet = vec![0, 2, 4];
-        assert_eq!(x.chroma(), 128 as u8);
+        assert_eq!(x.chroma(), 21);
+        let y: PcSet = vec![0];
+        assert_eq!(y.chroma(), 1);
     }
     #[test]
     fn complement() {
