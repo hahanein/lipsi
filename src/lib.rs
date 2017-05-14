@@ -58,7 +58,8 @@ trait SetOperations {
     fn reduced(&self) -> Self;
     fn prime(&self) -> Self;
     fn intervals(&self) -> Vec<i8>;
-    fn index(&self, other: &Self) -> Option<i8>;
+    fn transposition_number(&self, other: &Self) -> Option<i8>;
+    fn index_number(&self, other: &Self) -> Option<i8>;
 }
 
 impl SetOperations for PcSet {
@@ -130,16 +131,36 @@ impl SetOperations for PcSet {
                     .collect(),
         }
     }
+    /// Returns the transposition number of two pitch-class sets if they are
+    /// related by transposition
+    fn transposition_number(&self, other: &PcSet) -> Option<i8> {
+        if self.len() != other.len() { return None }
+
+        let differences: Vec<i8> =
+            self.iter()
+                .rev()
+                .zip(other)
+                .map(|(x, y)| { (x - y) % 12 })
+                .collect();
+
+        match differences.first() {
+            None => None,
+            Some(&first) => {
+                if sums.iter().all(|&x| x == first) { Some(first) }
+                else { None }
+            },
+        }
+    }
     /// Returns the index number of two pitch-class sets if they are
     /// related by inversion
-    fn index(&self, other: &PcSet) -> Option<i8> {
+    fn index_number(&self, other: &PcSet) -> Option<i8> {
         if self.len() != other.len() { return None }
 
         let sums: Vec<i8> =
             self.iter()
                 .rev()
                 .zip(other)
-                .map(|(a, b)| { (a + b) % 12 })
+                .map(|(x, y)| { (x + y) % 12 })
                 .collect();
 
         match sums.first() {
@@ -314,11 +335,11 @@ mod tests {
         assert_eq!(x.intervals(), vec![11, 5, 0]);
     }
     #[test]
-    fn index() {
+    fn index_number() {
         let x: PcSet = vec![7, 8, 11];
         let y: PcSet = vec![1, 4, 5];
-        assert_eq!(x.index(&y), Some(0));
+        assert_eq!(x.index_number(&y), Some(0));
         let z: PcSet = vec![7, 10, 11];
-        assert_eq!(x.index(&z), Some(6));
+        assert_eq!(x.index_number(&z), Some(6));
     }
 }
