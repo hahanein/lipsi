@@ -58,6 +58,7 @@ trait SetOperations {
     fn reduced(&self) -> Self;
     fn prime(&self) -> Self;
     fn intervals(&self) -> Vec<i8>;
+    fn index(&self, other: &Self) -> Option<i8>;
 }
 
 impl SetOperations for PcSet {
@@ -127,6 +128,26 @@ impl SetOperations for PcSet {
                     .rev()
                     .map(|x| (((x - first) % 12) + 12) % 12)
                     .collect(),
+        }
+    }
+    /// Returns the index number of two pitch-class sets if they are
+    /// related by inversion
+    fn index(&self, other: &PcSet) -> Option<i8> {
+        if self.len() != other.len() { return None }
+
+        let sums: Vec<i8> =
+            self.iter()
+                .rev()
+                .zip(other)
+                .map(|(a, b)| { (a + b) % 12 })
+                .collect();
+
+        match sums.first() {
+            None => None,
+            Some(&first) => {
+                if sums.iter().all(|&x| x == first) { Some(first) }
+                else { None }
+            },
         }
     }
 }
@@ -286,5 +307,18 @@ mod tests {
         assert_eq!(x.ivec(), [1,0,0,0,1,2,1,0,2,2,0,0]);
         let y: PcSet = vec![0, 3, 4];
         assert_eq!(y.ivec(), [1,0,0,2,2,0,1,2,1,0,0,0]);
+    }
+    #[test]
+    fn intervals() {
+        let x: PcSet = vec![4, 9, 3];
+        assert_eq!(x.intervals(), vec![11, 5, 0]);
+    }
+    #[test]
+    fn index() {
+        let x: PcSet = vec![7, 8, 11];
+        let y: PcSet = vec![1, 4, 5];
+        assert_eq!(x.index(&y), Some(0));
+        let z: PcSet = vec![7, 10, 11];
+        assert_eq!(x.index(&z), Some(6));
     }
 }
