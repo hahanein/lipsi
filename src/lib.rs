@@ -19,7 +19,7 @@ impl Fundamentals for PcSet {
     }
     /// Returns the transposition of the pitch-class set by _n_ semitones.
     fn transpose(&self, n: i8) -> PcSet {
-        self.iter().map(|x| (((x + n) % 12) + 12) % 12).collect()
+        self.iter().map(|x| ((x + n) % 12 + 12) % 12).collect()
     }
     /// Returns the inversion of the pitch-class set.
     fn i(&self) -> PcSet {
@@ -127,7 +127,7 @@ impl SetOperations for PcSet {
             Some(first) =>
                 self.iter()
                     .rev()
-                    .map(|x| (((x - first) % 12) + 12) % 12)
+                    .map(|x| ((x - first) % 12 + 12) % 12)
                     .collect(),
         }
     }
@@ -138,15 +138,14 @@ impl SetOperations for PcSet {
 
         let differences: Vec<i8> =
             self.iter()
-                .rev()
                 .zip(other)
-                .map(|(x, y)| { (x - y) % 12 })
+                .map(|(x, y)| ((x - y) % 12 + 12) % 12)
                 .collect();
 
         match differences.first() {
             None => None,
             Some(&first) => {
-                if sums.iter().all(|&x| x == first) { Some(first) }
+                if differences.iter().all(|&x| x == first) { Some(first) }
                 else { None }
             },
         }
@@ -160,7 +159,7 @@ impl SetOperations for PcSet {
             self.iter()
                 .rev()
                 .zip(other)
-                .map(|(x, y)| { (x + y) % 12 })
+                .map(|(x, y)| ((x + y) % 12 + 12) % 12)
                 .collect();
 
         match sums.first() {
@@ -341,5 +340,11 @@ mod tests {
         assert_eq!(x.index_number(&y), Some(0));
         let z: PcSet = vec![7, 10, 11];
         assert_eq!(x.index_number(&z), Some(6));
+    }
+    #[test]
+    fn transposition_number() {
+        let x: PcSet = vec![1, 3, 4, 7];
+        let y: PcSet = vec![5, 7, 8, 11];
+        assert_eq!(x.transposition_number(&y), Some(8));
     }
 }
