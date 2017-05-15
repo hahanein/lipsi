@@ -157,7 +157,6 @@ impl SetOperations for PcSet {
 
         let sums: Vec<i8> =
             self.iter()
-                .rev()
                 .zip(other)
                 .map(|(x, y)| ((x + y) % 12 + 12) % 12)
                 .collect();
@@ -336,15 +335,18 @@ mod tests {
     #[test]
     fn index_number() {
         let x: PcSet = vec![7, 8, 11];
-        let y: PcSet = vec![1, 4, 5];
+        let y: PcSet = vec![5, 4, 1];
         assert_eq!(x.index_number(&y), Some(0));
-        let z: PcSet = vec![7, 10, 11];
+        assert_eq!(x.tni(0), y); //
+        let z: PcSet = vec![11, 10, 7];
         assert_eq!(x.index_number(&z), Some(6));
+        assert_eq!(x.tni(6), z);
     }
     #[test]
     fn transposition_number() {
         let x: PcSet = vec![1, 3, 4, 7];
         let y: PcSet = vec![5, 7, 8, 11];
         assert_eq!(x.transposition_number(&y), Some(8));
+        assert_eq!(x.transpose(8), y);
     }
 }
