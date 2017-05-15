@@ -139,7 +139,7 @@ impl SetOperations for PcSet {
         let differences: Vec<i8> =
             self.iter()
                 .zip(other)
-                .map(|(x, y)| ((x - y) % 12 + 12) % 12)
+                .map(|(x, y)| ((y - x) % 12 + 12) % 12)
                 .collect();
 
         match differences.first() {
@@ -346,7 +346,7 @@ mod tests {
     fn transposition_number() {
         let x: PcSet = vec![1, 3, 4, 7];
         let y: PcSet = vec![5, 7, 8, 11];
-        assert_eq!(x.transposition_number(&y), Some(8));
-        assert_eq!(x.transpose(8), y);
+        assert_eq!(x.transposition_number(&y), Some(4));
+        assert_eq!(x.transpose(4), y);
     }
 }
