@@ -2,7 +2,7 @@ pub type PcSet = Vec<i8>;
 pub type IcVec = [usize; 6];
 pub type IVec = [usize; 12];
 
-trait Fundamentals {
+pub trait Fundamentals {
     fn invert(&self) -> Self;
     fn transpose(&self, i8) -> Self;
     fn i(&self) -> Self;
@@ -14,32 +14,102 @@ trait Fundamentals {
 
 impl Fundamentals for PcSet {
     /// Returns the inversion of the pitch-class set.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.invert(), vec![11,10,9]);
+    /// ```
     fn invert(&self) -> PcSet {
         self.iter().map(|x| (12 - x) % 12).collect()
     }
     /// Returns the transposition of the pitch-class set by _n_ semitones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.transpose(4), vec![5,6,7]);
+    ///
+    /// ```
     fn transpose(&self, n: i8) -> PcSet {
         self.iter().map(|x| ((x + n) % 12 + 12) % 12).collect()
     }
-    /// Returns the inversion of the pitch-class set.
+    /// Alias of `invert()`. Returns the inversion of the pitch-class set.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.i(), vec![11,10,9]);
+    ///
+    /// ```
     fn i(&self) -> PcSet {
         self.invert()
     }
-    /// Returns the transposition of the pitch-class set by _n_ semitones.
+    /// Alias of `transpose()`. Returns the transposition of the pitch-class
+    /// set by _n_ semitones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.t(4), vec![5,6,7]);
+    ///
+    /// ```
     fn t(&self, n: i8) -> PcSet {
         self.transpose(n)
     }
     /// Inverts the pitch-class set, then returns the transposition by _n_
     /// semitones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.tni(4), vec![3,2,1]);
+    ///
+    /// ```
     fn tni(&self, n: i8) -> PcSet {
         self.invert().transpose(n)
     }
     /// Returns the transposition of the pitch-class set by _y_ semitones around
     /// the axis _x_
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.ixy(4, 5), vec![8,7,6]);
+    ///
+    /// ```
     fn ixy(&self, x: i8, y: i8) -> PcSet {
         self.invert().transpose(x+y)
     }
     /// Returns the binary representation of the pitch-class chroma feature
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.chroma(), 14);
+    ///
+    /// ```
     fn chroma(&self) -> u16 {
         (0..12)
             .map(|x| self.contains(&x))
@@ -48,7 +118,7 @@ impl Fundamentals for PcSet {
     }
 }
 
-trait SetOperations {
+pub trait SetOperations {
     fn complement(&self) -> Self;
     fn retrograde(&self) -> Self;
     fn sort(&self) -> Self;
