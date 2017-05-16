@@ -134,14 +134,44 @@ pub trait SetOperations {
 
 impl SetOperations for PcSet {
     /// Returns the complement of the pitch-class set
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.complement(), vec![0,4,5,6,7,8,9,10,11]);
+    ///
+    /// ```
     fn complement(&self) -> PcSet {
         (0..12).filter(|x| !self.contains(x)).collect()
     }
     /// Returns the retrograde of the pitch-class set
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.retrograde(), vec![3,2,1]);
+    ///
+    /// ```
     fn retrograde(&self) -> PcSet {
         self.iter().rev().cloned().collect()
     }
     /// Returns the sorted pitch-class set in ascending order
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![3,2,1];
+    /// assert_eq!(pcset.sort(), vec![1,2,3]);
+    ///
+    /// ```
     fn sort(&self) -> PcSet {
         let mut clone = self.clone();
         let mut temp: i8;
@@ -157,9 +187,28 @@ impl SetOperations for PcSet {
         clone
     }
     /// Returns the rotation of the pitch-class set by _n_ semitones
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.rotate(4), vec![3,1,2]);
+    ///
+    /// ```
     fn rotate(&self, n: usize) -> PcSet {
         self.iter().cycle().skip(n + 1).take(self.len()).cloned().collect()
     }
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.zero(), vec![0,1,2]);
+    ///
+    /// ```
     fn zero(&self) -> PcSet {
         match self.first() {
             Some(head) => self.transpose(12 - head),
@@ -167,21 +216,50 @@ impl SetOperations for PcSet {
         }
     }
     /// Returns the normal form of the pitch-class set
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.normal(), vec![1,2,3]);
+    ///
+    /// ```
     fn normal(&self) -> PcSet {
         let mut sorted = self.sort();
         sorted.dedup();
 
-        (0..{self.len()})
+        (0..self.len())
             .map(|x| sorted.rotate(x))
             .fold(sorted.clone(), |x, y| {
                 if x.intervals() > y.intervals() { y }
                 else { x }
             })
     }
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.reduced(), vec![0,1,2]);
+    ///
+    /// ```
     fn reduced(&self) -> PcSet {
         self.normal().zero()
     }
     /// Returns the prime form of the pitch-class set
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.prime(), vec![0,1,2]);
+    ///
+    /// ```
     fn prime(&self) -> PcSet {
         let a = self.normal().zero();
         let b = self.invert().normal().zero();
@@ -191,6 +269,16 @@ impl SetOperations for PcSet {
     /// Helper function that returns a vector containing the
     /// interval-classes for the first and n to last pitch-class in a
     /// pitch-class set
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// assert_eq!(pcset.intervals(), vec![2,1,0]);
+    ///
+    /// ```
     fn intervals(&self) -> Vec<i8> {
         match self.first() {
             None =>vec![],
@@ -203,6 +291,17 @@ impl SetOperations for PcSet {
     }
     /// Returns the transposition number of two pitch-class sets if they are
     /// related by transposition
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// let other: PcSet = vec![5,6,7];
+    /// assert_eq!(pcset.transposition_number(&other), Some(4));
+    ///
+    /// ```
     fn transposition_number(&self, other: &PcSet) -> Option<i8> {
         if self.len() != other.len() { return None }
 
@@ -222,6 +321,17 @@ impl SetOperations for PcSet {
     }
     /// Returns the index number of two pitch-class sets if they are
     /// related by inversion
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// let other: PcSet = vec![3,2,1];
+    /// assert_eq!(pcset.index_number(&other), Some(4));
+    ///
+    /// ```
     fn index_number(&self, other: &PcSet) -> Option<i8> {
         if self.len() != other.len() { return None }
 
@@ -241,7 +351,7 @@ impl SetOperations for PcSet {
     }
 }
 
-trait SetAnalysis {
+pub trait SetAnalysis {
     /// Returns the Interval-Class Vector
     fn icvec(&self) -> IcVec;
     /// Returns the Index Vector
@@ -250,6 +360,17 @@ trait SetAnalysis {
 
 impl SetAnalysis for PcSet {
     /// Returns the interval-class vector of the pitch-class set
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// let icvec: IcVec = [2,1,0,0,0,0];
+    /// assert_eq!(pcset.icvec(), icvec);
+    ///
+    /// ```
     fn icvec(&self) -> IcVec {
         fn f(pcset: &PcSet) -> Vec<i8> {
             match pcset.split_first() {
@@ -277,6 +398,17 @@ impl SetAnalysis for PcSet {
         ]
     }
     /// Returns the interval vector of the pitch-class set
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lipsi::*;
+    ///
+    /// let pcset: PcSet = vec![1,2,3];
+    /// let ivec: IVec = [0,0,1,2,3,2,1,0,0,0,0,0];
+    /// assert_eq!(pcset.ivec(), ivec);
+    ///
+    /// ```
     fn ivec(&self) -> IVec {
         let intervals: Vec<i8> =
             self
