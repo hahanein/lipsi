@@ -65,7 +65,7 @@ pub trait Fundamentals {
     /// ```
     fn tni(&self, i8) -> Self;
     /// Returns the transposition of the pitch-class set by _y_ semitones around
-    /// the axis _x_
+    /// the axis _x_.
     ///
     /// # Examples
     ///
@@ -77,7 +77,7 @@ pub trait Fundamentals {
     ///
     /// ```
     fn ixy(&self, i8, i8) -> Self;
-    /// Returns the binary representation of the pitch-class chroma feature
+    /// Returns the binary representation of the pitch-class chroma feature.
     ///
     /// # Examples
     ///
@@ -119,7 +119,7 @@ impl Fundamentals for PcSet {
 }
 
 pub trait SetOperations {
-    /// Returns the complement of the pitch-class set
+    /// Returns the complement of the pitch-class set.
     ///
     /// # Examples
     ///
@@ -131,7 +131,7 @@ pub trait SetOperations {
     ///
     /// ```
     fn complement(&self) -> Self;
-    /// Returns the retrograde of the pitch-class set
+    /// Returns the retrograde of the pitch-class set.
     ///
     /// # Examples
     ///
@@ -143,7 +143,7 @@ pub trait SetOperations {
     ///
     /// ```
     fn retrograde(&self) -> Self;
-    /// Returns the sorted pitch-class set in ascending order
+    /// Returns the sorted pitch-class set in ascending order.
     ///
     /// # Examples
     ///
@@ -155,7 +155,7 @@ pub trait SetOperations {
     ///
     /// ```
     fn sort(&self) -> Self;
-    /// Returns the rotation of the pitch-class set by _n_ semitones
+    /// Returns the rotation of the pitch-class set by _n_ semitones.
     ///
     /// # Examples
     ///
@@ -177,7 +177,7 @@ pub trait SetOperations {
     ///
     /// ```
     fn zero(&self) -> Self;
-    /// Returns the normal form of the pitch-class set
+    /// Returns the normal form of the pitch-class set.
     ///
     /// # Examples
     ///
@@ -199,7 +199,7 @@ pub trait SetOperations {
     ///
     /// ```
     fn reduced(&self) -> Self;
-    /// Returns the prime form of the pitch-class set
+    /// Returns the prime form of the pitch-class set.
     ///
     /// # Examples
     ///
@@ -213,7 +213,7 @@ pub trait SetOperations {
     fn prime(&self) -> Self;
     /// Helper function that returns a vector containing the
     /// interval-classes for the first and n to last pitch-class in a
-    /// pitch-class set
+    /// pitch-class set.
     ///
     /// # Examples
     ///
@@ -226,7 +226,7 @@ pub trait SetOperations {
     /// ```
     fn intervals(&self) -> Vec<i8>;
     /// Returns the transposition number of two pitch-class sets if they are
-    /// related by transposition
+    /// related by transposition.
     ///
     /// # Examples
     ///
@@ -240,7 +240,7 @@ pub trait SetOperations {
     /// ```
     fn transposition_number(&self, other: &Self) -> Option<i8>;
     /// Returns the index number of two pitch-class sets if they are
-    /// related by inversion
+    /// related by inversion.
     ///
     /// # Examples
     ///
@@ -352,7 +352,7 @@ impl SetOperations for PcSet {
 }
 
 pub trait SetAnalysis {
-    /// Returns the interval-class vector of the pitch-class set
+    /// Returns the interval-class vector of the pitch-class set.
     ///
     /// # Examples
     ///
@@ -365,7 +365,7 @@ pub trait SetAnalysis {
     ///
     /// ```
     fn icvec(&self) -> IcVec;
-    /// Returns the interval vector of the pitch-class set
+    /// Returns the interval vector of the pitch-class set.
     ///
     ///
     /// # Examples
