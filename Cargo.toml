@@ -2,7 +2,7 @@
 name = "lipsi"
 version = "2.0.1"
 authors = ["hahanein <binjamin@riseup.net>"]
-description = "Pitch Class Sets for Rust"
+description = "Pitch-class sets for Rust."
 license = "GPL-3.0"
 repository = "https://github.com/hahanein/lipsi.git"
 

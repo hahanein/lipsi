@@ -1,3 +1,3 @@
 # lipsi
 
-Pitch Class Sets for Rust
+Pitch-class sets for Rust.
